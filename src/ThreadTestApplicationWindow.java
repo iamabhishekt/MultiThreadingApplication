@@ -1,7 +1,7 @@
 import java.awt.*;
 import javax.swing.*;
 
-public class ThreadTestApplicationUI extends JFrame {
+public class ThreadTestApplicationWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
@@ -13,7 +13,7 @@ public class ThreadTestApplicationUI extends JFrame {
     private JLabel grandTotalLabel;
     private JLabel titleLabel;
 
-    public ThreadTestApplicationUI() {
+    public ThreadTestApplicationWindow() {
         setupFrame();
         initializeComponents();
         layoutComponents();
@@ -117,7 +117,7 @@ public class ThreadTestApplicationUI extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new ThreadTestApplicationUI().setVisible(true);
+            new ThreadTestApplicationWindow().setVisible(true);
         });
     }
 }
