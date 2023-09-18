@@ -24,7 +24,7 @@ public class ThreadTestApplicationWindow extends JFrame {
         layoutComponents();
     }
 
-    // ==================== UI Components ====================
+    /* UI Components */
     private void setupFrame() {
         setTitle("Thread Test Application");
         setSize(545, 190);
@@ -126,7 +126,7 @@ public class ThreadTestApplicationWindow extends JFrame {
         threadDisplayPanel.add(grandTotalPanel, grandTotalPanelConstraints);
     }
 
-    // ==================== Thread Logic ====================
+    /* Thread Logic*/
     // Methods for Button Actions
     private void handleStartAction(ActionEvent e) {
         initializeThreads();
@@ -305,7 +305,7 @@ public class ThreadTestApplicationWindow extends JFrame {
         }
     }
 
-    // ==================== Main Class ====================
+    /*Main Class*/
     // Running an application
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
