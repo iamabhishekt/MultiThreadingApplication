@@ -16,6 +16,9 @@ public class ThreadTestApplicationWindow extends JFrame {
     // store threads
     private ThreadTask[] threads = new ThreadTask[4];
 
+    // Thread Operation Manager variable
+    private ThreadOperationManager threadManager = new ThreadOperationManager();
+
     public ThreadTestApplicationWindow() {
         setupFrame();
         initializeComponents();
@@ -51,14 +54,29 @@ public class ThreadTestApplicationWindow extends JFrame {
         // Action Listeners for buttons
         // start button
         startButton.addActionListener(e -> {
-            for (int i = 0; i < 4; i++) {
-                threads[i] = new ThreadTask(progressBars[i], threadTotals[i], grandTotalLabel, 100); // hardcoded
-                threads[i].start();
-            }
+            initializeThreads();
             startButton.setEnabled(false);
             pauseButton.setEnabled(true);
             resumeButton.setEnabled(false);
         });
+    }
+
+    // Initialize Thread Method for action listener
+    private void initializeThreads() {
+        double[] intervals = { 346.5, 252, 462, 198 };
+        for (int i = 0; i < 4; i++) {
+            ThreadTaskInterface task = threadManager.getTasks()[i];
+            if (task instanceof ThreadTask) {
+                ThreadTask threadTask = (ThreadTask) task;
+                if (threadTask.isAlive()) {
+                    threadTask.interrupt();
+                }
+            }
+            progressBars[i].setValue(0);
+            threadTotals[i].setText("0");
+        }
+        grandTotalLabel.setText("Grand Total: 0");
+        threadManager.initializeTasks(progressBars, threadTotals, grandTotalLabel, intervals);
     }
 
     private void layoutComponents() {
@@ -132,13 +150,13 @@ public class ThreadTestApplicationWindow extends JFrame {
     }
 
     // Thread Class with Interface
-    class ThreadTask extends Thread implements ThreadTaskInterface {
+    public class ThreadTask extends Thread implements ThreadTaskInterface {
         private JProgressBar progressBar;
         private JLabel threadTotalLabel;
         private JLabel grandTotalLabel;
         private double sleepInterval; // this is in milliseconds
 
-        // lock variable
+        // lock object for critical section
         private static final Object lock = new Object();
 
         public ThreadTask(JProgressBar progressBar, JLabel threadTotalLabel, JLabel grandTotalLabel,
@@ -196,6 +214,29 @@ public class ThreadTestApplicationWindow extends JFrame {
             this.start();
         }
 
+    }
+
+    // Thread Operation Manager Class
+    public class ThreadOperationManager {
+
+        private ThreadTaskInterface[] tasks = new ThreadTaskInterface[4];
+
+        public void initializeTasks(JProgressBar[] progressBars, JLabel[] threadTotals, JLabel grandTotalLabel,
+                double[] intervals) {
+            for (int i = 0; i < 4; i++) {
+                tasks[i] = new ThreadTask(progressBars[i], threadTotals[i], grandTotalLabel, intervals[i]);
+            }
+        }
+
+        public ThreadTaskInterface[] getTasks() {
+            return tasks;
+        }
+
+        public void startTasks() {
+            for (int i = 0; i < tasks.length; i++) {
+                tasks[i].startTask();
+            }
+        }
     }
 
     // Running an application
