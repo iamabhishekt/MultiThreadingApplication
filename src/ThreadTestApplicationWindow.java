@@ -13,9 +13,6 @@ public class ThreadTestApplicationWindow extends JFrame {
     private JLabel grandTotalLabel;
     private JLabel titleLabel;
 
-    // store threads
-    private ThreadTask[] threads = new ThreadTask[4];
-
     // Thread Operation Manager variable
     private ThreadOperationManager threadManager = new ThreadOperationManager();
 
