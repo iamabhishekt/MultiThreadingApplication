@@ -3,10 +3,15 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.*;
 
+/**
+ * The main window for the Thread Test Application.
+ * Displays progress bars, controls, and totals for multiple threads.
+ */
 public class ThreadTestApplicationWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
+    // UI components for thread info and actions
     private JLabel[] threadTotalLabels;
     private JProgressBar[] threadProgressBars;
     private JButton startButton;
@@ -15,9 +20,12 @@ public class ThreadTestApplicationWindow extends JFrame {
     private JLabel grandTotalLabel;
     private JLabel titleLabel;
 
-    // Thread Operation Manager variable
+    // Manager to handle thread operations
     private ThreadOperationManager threadManager = new ThreadOperationManager();
 
+    /**
+     * Sets up the main window's properties and layouts.
+     */
     public ThreadTestApplicationWindow() {
         setupFrame();
         initializeUIComponents();
@@ -25,6 +33,10 @@ public class ThreadTestApplicationWindow extends JFrame {
     }
 
     /* UI Components */
+
+    /**
+     * Initializes the main properties of the application window.
+     */
     private void setupFrame() {
         setTitle("Thread Test Application");
         setSize(545, 190);
@@ -36,7 +48,9 @@ public class ThreadTestApplicationWindow extends JFrame {
         getContentPane().setLayout(new BorderLayout(0, 0));
     }
 
-    // UI Components Initialization
+    /**
+     * Initializes UI components including progress bars, labels, and buttons.
+     */
     private void initializeUIComponents() {
         titleLabel = new JLabel("Thread Test Application");
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -44,7 +58,7 @@ public class ThreadTestApplicationWindow extends JFrame {
         threadTotalLabels = new JLabel[4];
         threadProgressBars = new JProgressBar[4];
 
-        // Initialize and set Action Listeners for buttons
+        // Setup buttons and their action listeners
         startButton = new JButton("Start");
         startButton.addActionListener(this::handleStartAction);
         pauseButton = new JButton("Pause");
@@ -55,7 +69,9 @@ public class ThreadTestApplicationWindow extends JFrame {
         grandTotalLabel = new JLabel("Grand Total: 0");
     }
 
-    // Layout Components
+    /**
+     * Arranges the initialized UI components on the window.
+     */
     private void layoutComponents() {
         getContentPane().add(titleLabel, BorderLayout.NORTH);
 
@@ -67,6 +83,9 @@ public class ThreadTestApplicationWindow extends JFrame {
         setupGrandTotalPanel(threadDisplayPanel);
     }
 
+    /**
+     * Arranges the thread-related display components like labels and progress bars.
+     */
     private void setupThreadDisplayComponents(JPanel threadDisplayPanel) {
         for (int i = 0; i < 4; i++) {
             JLabel threadLabel = new JLabel((i + 1) + ": ");
@@ -97,6 +116,9 @@ public class ThreadTestApplicationWindow extends JFrame {
         }
     }
 
+    /**
+     * Sets up and arranges the control buttons on the window.
+     */
     private void setupButtonPanel(JPanel threadDisplayPanel) {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
         buttonPanel.add(startButton);
@@ -113,6 +135,9 @@ public class ThreadTestApplicationWindow extends JFrame {
         threadDisplayPanel.add(buttonPanel, buttonPanelConstraints);
     }
 
+    /**
+     * Sets up and arranges the grand total display on the window.
+     */
     private void setupGrandTotalPanel(JPanel threadDisplayPanel) {
         JPanel grandTotalPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
         grandTotalPanel.add(grandTotalLabel);
@@ -126,8 +151,9 @@ public class ThreadTestApplicationWindow extends JFrame {
         threadDisplayPanel.add(grandTotalPanel, grandTotalPanelConstraints);
     }
 
-    /* Thread Logic*/
-    // Methods for Button Actions
+    /* Thread Logic */
+
+    // Action when 'Start' button is clicked
     private void handleStartAction(ActionEvent e) {
         initializeThreads();
         startAllThreads();
@@ -136,12 +162,14 @@ public class ThreadTestApplicationWindow extends JFrame {
         resumeButton.setEnabled(false);
     }
 
+    // Action when 'Pause' button is clicked
     private void handlePauseAction(ActionEvent e) {
         pauseAllThreads();
         pauseButton.setEnabled(false);
         resumeButton.setEnabled(true);
     }
 
+    // Action when 'Resume' button is clicked
     private void handleResumeAction(ActionEvent e) {
         resumeAllThreads();
         pauseButton.setEnabled(true);
@@ -150,7 +178,7 @@ public class ThreadTestApplicationWindow extends JFrame {
 
     // Initialize Thread Method for action listener
     private void initializeThreads() {
-        double[] threadSleepIntervals = { 400, 300, 500, 200 }; // taking longer threadSleepIntervals
+        double[] threadSleepIntervals = { 400, 300, 500, 200 };
         for (int i = 0; i < 4; i++) {
             ThreadTaskControl task = threadManager.getTasks()[i];
             if (task instanceof ThreadTask) {
@@ -181,7 +209,7 @@ public class ThreadTestApplicationWindow extends JFrame {
         threadManager.resumeAllTasks();
     }
 
-    // Thread Task Interface
+    // Interface for controlling thread tasks
     interface ThreadTaskControl {
 
         void startTask();
@@ -191,8 +219,21 @@ public class ThreadTestApplicationWindow extends JFrame {
         void resumeTask();
     }
 
-    // Thread Class with Interface
+    /**
+     * Represents a single thread task that updates its progress and grand total.
+     * This class is controllable (start, pause, resume) and its progress can be
+     * visualized in the UI.
+     */
     public class ThreadTask extends Thread implements ThreadTaskControl {
+
+        /**
+         * Constructor to initialize thread with associated UI components.
+         *
+         * @param progressBar      The UI progress bar associated with this thread.
+         * @param threadTotalLabel The label showing this thread's total.
+         * @param grandTotalLabel  The label showing the grand total across all threads.
+         * @param sleepInterval    The interval for the thread to sleep.
+         */
 
         private JProgressBar progressBar;
         private JLabel threadTotalLabel;
@@ -209,6 +250,10 @@ public class ThreadTestApplicationWindow extends JFrame {
             this.sleepInterval = sleepInterval;
         }
 
+        /**
+         * Core logic of the thread. Updates progress bar, thread total, and grand
+         * total.
+         */
         @Override
         public void run() {
             for (int i = 1; i <= 100 && !isInterrupted(); i++) {
@@ -269,11 +314,15 @@ public class ThreadTestApplicationWindow extends JFrame {
         }
     }
 
-    // Thread Operation Manager Class
+    /**
+     * A manager to control operations and states of multiple thread tasks.
+     * Provides facilities to start, pause, and resume all thread tasks.
+     */
     public class ThreadOperationManager {
 
         private ThreadTaskControl[] tasks = new ThreadTaskControl[4];
 
+        // Initializes the thread tasks.
         public void initializeTasks(JProgressBar[] threadProgressBars, JLabel[] threadTotalLabels,
                 JLabel grandTotalLabel, double[] threadSleepIntervals) {
             for (int i = 0; i < 4; i++) {
@@ -305,8 +354,12 @@ public class ThreadTestApplicationWindow extends JFrame {
         }
     }
 
-    /*Main Class*/
-    // Running an application
+    /* Main Class */
+    /**
+     * The main entry point of the application.
+     *
+     * @param args Command-line arguments.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             new ThreadTestApplicationWindow().setVisible(true);
