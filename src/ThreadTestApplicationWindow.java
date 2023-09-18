@@ -269,7 +269,7 @@ public class ThreadTestApplicationWindow extends JFrame {
         public void resumeThread() {
             synchronized (pauseLock) { 
                 paused = false;
-                notify();
+                pauseLock.notify();
             }
         }
     }
