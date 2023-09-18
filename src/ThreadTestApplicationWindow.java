@@ -21,7 +21,7 @@ public class ThreadTestApplicationWindow extends JFrame {
     private JLabel grandTotalLabel;
     private JLabel titleLabel;
 
-    private ThreadOperationManager threadManager = new ThreadOperationManager();
+    private ControlledThreadManager threadManager = new ControlledThreadManager();
 
     public ThreadTestApplicationWindow() {
         setupFrame();
@@ -49,10 +49,15 @@ public class ThreadTestApplicationWindow extends JFrame {
 
         startButton = new JButton("Start");
         startButton.addActionListener(this::handleStartAction);
+        startButton.setEnabled(true);
+
         pauseButton = new JButton("Pause");
         pauseButton.addActionListener(this::handlePauseAction);
+        pauseButton.setEnabled(false);
+
         resumeButton = new JButton("Resume");
         resumeButton.addActionListener(this::handleResumeAction);
+        resumeButton.setEnabled(false);
 
         grandTotalLabel = new JLabel("Grand Total: 0");
     }
@@ -150,42 +155,42 @@ public class ThreadTestApplicationWindow extends JFrame {
     private void initializeThreads() {
         double[] threadSleepIntervals = { 400, 300, 500, 200 };
         for (int i = 0; i < NUM_THREADS; i++) {
-            ThreadTaskControl task = threadManager.getTasks()[i];
-            if (task instanceof ThreadTask) {
-                ThreadTask threadTask = (ThreadTask) task;
-                if (threadTask.isAlive()) {
-                    threadTask.interrupt();
+            ThreadControl thread = threadManager.getThreads()[i];
+            if (thread instanceof ControlledThread) {
+                ControlledThread controlledThread = (ControlledThread) thread;
+                if (controlledThread.isAlive()) {
+                    controlledThread.interrupt();
                 }
             }
             threadProgressBars[i].setValue(0);
             threadTotalLabels[i].setText("0");
         }
         grandTotalLabel.setText("Grand Total: 0");
-        threadManager.initializeTasks(threadProgressBars, threadTotalLabels, grandTotalLabel, threadSleepIntervals);
+        threadManager.initializeThreads(threadProgressBars, threadTotalLabels, grandTotalLabel, threadSleepIntervals);
     }
 
     private void startAllThreads() {
-        threadManager.startAllTasks();
+        threadManager.startAllThreads();
     }
 
     private void pauseAllThreads() {
-        threadManager.pauseAllTasks();
+        threadManager.pauseAllThreads();
     }
 
     private void resumeAllThreads() {
-        threadManager.resumeAllTasks();
+        threadManager.resumeAllThreads();
     }
 
-    interface ThreadTaskControl {
+    interface ThreadControl {
 
-        void startTask();
+        void startThread();
 
-        void pauseTask();
+        void pauseThread();
 
-        void resumeTask();
+        void resumeThread();
     }
 
-    public class ThreadTask extends Thread implements ThreadTaskControl {
+    public class ControlledThread extends Thread implements ThreadControl {
 
         private JProgressBar progressBar;
         private JLabel threadTotalLabel;
@@ -193,8 +198,9 @@ public class ThreadTestApplicationWindow extends JFrame {
         private double sleepInterval;
         private volatile boolean paused = false;
         private static final Object GRAND_TOTAL_LOCK = new Object();
+        private final Object pauseLock = new Object();
 
-        public ThreadTask(JProgressBar progressBar, JLabel threadTotalLabel, JLabel grandTotalLabel,
+        public ControlledThread(JProgressBar progressBar, JLabel threadTotalLabel, JLabel grandTotalLabel,
                 double sleepInterval) {
             this.progressBar = progressBar;
             this.threadTotalLabel = threadTotalLabel;
@@ -212,6 +218,7 @@ public class ThreadTestApplicationWindow extends JFrame {
                         } catch (InterruptedException e) {
                             return;
                         }
+                        break;
                     }
                 }
 
@@ -227,6 +234,7 @@ public class ThreadTestApplicationWindow extends JFrame {
                         try {
                             Thread.sleep(THREAD_SLEEP_DURATION);
                         } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
                             return;
                         }
 
@@ -246,53 +254,57 @@ public class ThreadTestApplicationWindow extends JFrame {
         }
 
         @Override
-        public void startTask() {
+        public void startThread() {
             this.start();
         }
 
         @Override
-        public synchronized void pauseTask() {
-            paused = true;
+        public void pauseThread() {
+            synchronized (pauseLock) {
+                paused = true;
+            }
         }
 
         @Override
-        public synchronized void resumeTask() {
-            paused = false;
-            notify();
+        public void resumeThread() {
+            synchronized (pauseLock) { 
+                paused = false;
+                notify();
+            }
         }
     }
 
-    public class ThreadOperationManager {
+    public class ControlledThreadManager {
 
-        private ThreadTaskControl[] tasks = new ThreadTaskControl[NUM_THREADS];
+        private ThreadControl[] threads = new ThreadControl[NUM_THREADS];
 
-        public void initializeTasks(JProgressBar[] threadProgressBars, JLabel[] threadTotalLabels,
+        public void initializeThreads(JProgressBar[] threadProgressBars, JLabel[] threadTotalLabels,
                 JLabel grandTotalLabel, double[] threadSleepIntervals) {
             for (int i = 0; i < NUM_THREADS; i++) {
-                tasks[i] = new ThreadTask(threadProgressBars[i], threadTotalLabels[i], grandTotalLabel,
+                threads[i] = new ControlledThread(threadProgressBars[i], threadTotalLabels[i], grandTotalLabel,
                         threadSleepIntervals[i]);
             }
         }
 
-        public ThreadTaskControl[] getTasks() {
-            return tasks;
+        public ThreadControl[] getThreads() {
+            return threads;
         }
 
-        public void startAllTasks() {
-            for (int i = 0; i < tasks.length; i++) {
-                tasks[i].startTask();
+        public void startAllThreads() {
+            for (int i = 0; i < threads.length; i++) {
+                threads[i].startThread();
             }
         }
 
-        public void pauseAllTasks() {
-            for (ThreadTaskControl task : tasks) {
-                task.pauseTask();
+        public void pauseAllThreads() {
+            for (ThreadControl thread : threads) {
+                thread.pauseThread();
             }
         }
 
-        public void resumeAllTasks() {
-            for (ThreadTaskControl task : tasks) {
-                task.resumeTask();
+        public void resumeAllThreads() {
+            for (ThreadControl thread : threads) {
+                thread.resumeThread();
             }
         }
     }
