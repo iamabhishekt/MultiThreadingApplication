@@ -20,10 +20,11 @@ public class ThreadTestApplicationWindow extends JFrame {
 
     public ThreadTestApplicationWindow() {
         setupFrame();
-        initializeComponents();
+        initializeUIComponents();
         layoutComponents();
     }
 
+    // ==================== UI Components ====================
     private void setupFrame() {
         setTitle("Thread Test Application");
         setSize(545, 190);
@@ -35,94 +36,26 @@ public class ThreadTestApplicationWindow extends JFrame {
         getContentPane().setLayout(new BorderLayout(0, 0));
     }
 
-    // Methods for Button Actions
-    private void handleStartAction(ActionEvent e) {
-        initializeThreads();
-        startAllThreads();
-        startButton.setEnabled(true);
-        pauseButton.setEnabled(true);
-        resumeButton.setEnabled(false);
-    }
-
-    private void handlePauseAction(ActionEvent e) {
-        pauseAllThreads();
-        pauseButton.setEnabled(false);
-        resumeButton.setEnabled(true);
-    }
-
-    private void handleResumeAction(ActionEvent e) {
-        resumeAllThreads();
-        pauseButton.setEnabled(true);
-        resumeButton.setEnabled(false);
-    }
-
-    // Thread Task Interface
-    interface ThreadTaskControl {
-        void startTask();
-
-        void pauseTask();
-
-        void resumeTask();
-    }
-
-    private void initializeComponents() {
+    // UI Components Initialization
+    private void initializeUIComponents() {
         titleLabel = new JLabel("Thread Test Application");
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         threadTotalLabels = new JLabel[4];
         threadProgressBars = new JProgressBar[4];
 
-        // start button
+        // Initialize and set Action Listeners for buttons
         startButton = new JButton("Start");
-        // Action Listeners call from functions for buttons
         startButton.addActionListener(this::handleStartAction);
-
-        // pasuse button
         pauseButton = new JButton("Pause");
-        // Action Listeners call from functions for buttons
         pauseButton.addActionListener(this::handlePauseAction);
-
-        // resume button
         resumeButton = new JButton("Resume");
-        // Action Listeners call from functions for buttons
         resumeButton.addActionListener(this::handleResumeAction);
 
         grandTotalLabel = new JLabel("Grand Total: 0");
     }
 
-    // Initialize Thread Method for action listener
-    private void initializeThreads() {
-        double[] threadSleepIntervals = { 400, 300, 500, 200 }; // taking longer threadSleepIntervals
-        for (int i = 0; i < 4; i++) {
-            ThreadTaskControl task = threadManager.getTasks()[i];
-            if (task instanceof ThreadTask) {
-                ThreadTask threadTask = (ThreadTask) task;
-                if (threadTask.isAlive()) {
-                    threadTask.interrupt();
-                }
-            }
-            threadProgressBars[i].setValue(0);
-            threadTotalLabels[i].setText("0");
-        }
-        grandTotalLabel.setText("Grand Total: 0");
-        threadManager.initializeTasks(threadProgressBars, threadTotalLabels, grandTotalLabel, threadSleepIntervals);
-    }
-
-    // start all threads method from Thread Operation Manager
-    private void startAllThreads() {
-        threadManager.startAllTasks();
-    }
-
-    // Pause all threads method
-    private void pauseAllThreads() {
-        threadManager.pauseAllTasks();
-    }
-
-    // Resume all threads method
-    private void resumeAllThreads() {
-        threadManager.resumeAllTasks();
-    }
-
+    // Layout Components
     private void layoutComponents() {
         getContentPane().add(titleLabel, BorderLayout.NORTH);
 
@@ -191,6 +124,71 @@ public class ThreadTestApplicationWindow extends JFrame {
         grandTotalPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
         grandTotalPanelConstraints.weighty = 1;
         threadDisplayPanel.add(grandTotalPanel, grandTotalPanelConstraints);
+    }
+
+    // ==================== Thread Logic ====================
+    // Methods for Button Actions
+    private void handleStartAction(ActionEvent e) {
+        initializeThreads();
+        startAllThreads();
+        startButton.setEnabled(true);
+        pauseButton.setEnabled(true);
+        resumeButton.setEnabled(false);
+    }
+
+    private void handlePauseAction(ActionEvent e) {
+        pauseAllThreads();
+        pauseButton.setEnabled(false);
+        resumeButton.setEnabled(true);
+    }
+
+    private void handleResumeAction(ActionEvent e) {
+        resumeAllThreads();
+        pauseButton.setEnabled(true);
+        resumeButton.setEnabled(false);
+    }
+
+    // Initialize Thread Method for action listener
+    private void initializeThreads() {
+        double[] threadSleepIntervals = { 400, 300, 500, 200 }; // taking longer threadSleepIntervals
+        for (int i = 0; i < 4; i++) {
+            ThreadTaskControl task = threadManager.getTasks()[i];
+            if (task instanceof ThreadTask) {
+                ThreadTask threadTask = (ThreadTask) task;
+                if (threadTask.isAlive()) {
+                    threadTask.interrupt();
+                }
+            }
+            threadProgressBars[i].setValue(0);
+            threadTotalLabels[i].setText("0");
+        }
+        grandTotalLabel.setText("Grand Total: 0");
+        threadManager.initializeTasks(threadProgressBars, threadTotalLabels, grandTotalLabel, threadSleepIntervals);
+    }
+
+    // start all threads method from Thread Operation Manager
+    private void startAllThreads() {
+        threadManager.startAllTasks();
+    }
+
+    // Pause all threads method
+    private void pauseAllThreads() {
+        threadManager.pauseAllTasks();
+    }
+
+    // Resume all threads method
+    private void resumeAllThreads() {
+        threadManager.resumeAllTasks();
+    }
+
+    // Thread Task Interface
+    interface ThreadTaskControl {
+
+        void startTask();
+
+        void pauseTask();
+
+        void resumeTask();
     }
 
     // Thread Class with Interface
@@ -307,6 +305,7 @@ public class ThreadTestApplicationWindow extends JFrame {
         }
     }
 
+    // ==================== Main Class ====================
     // Running an application
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
