@@ -53,9 +53,27 @@ public class ThreadTestApplicationWindow extends JFrame {
         startButton.addActionListener(e -> {
             initializeThreads();
             startAllThreads();
-            startButton.setEnabled(false);
+            startButton.setEnabled(true);
             pauseButton.setEnabled(true);
-            resumeButton.setEnabled(false);
+            resumeButton.setEnabled(true);
+        });
+
+        // Action Listeners for buttons
+        // pasuse button
+        pauseButton.addActionListener(e -> {
+            initializeThreads();
+            pauseAllThreads();
+            pauseButton.setEnabled(true);
+            resumeButton.setEnabled(true);
+        });
+
+        // Action Listeners for buttons
+        // resume button
+        resumeButton.addActionListener(e -> {
+            initializeThreads();
+            resumeAllThreads();
+            pauseButton.setEnabled(true);
+            resumeButton.setEnabled(true);
         });
     }
 
@@ -77,9 +95,19 @@ public class ThreadTestApplicationWindow extends JFrame {
         threadManager.initializeTasks(progressBars, threadTotals, grandTotalLabel, intervals);
     }
 
-    //start all threads method
+    // start all threads method from Thread Operation Manager
     private void startAllThreads() {
         threadManager.startTasks();
+    }
+
+    // Pause all threads method
+    private void pauseAllThreads() {
+        threadManager.pauseTasks();
+    }
+
+    // Resume all threads method
+    private void resumeAllThreads() {
+        threadManager.resumeTasks();
     }
 
     private void layoutComponents() {
@@ -162,6 +190,9 @@ public class ThreadTestApplicationWindow extends JFrame {
         // lock object for critical section
         private static final Object lock = new Object();
 
+        // for pausing the and resuming the thread
+        private volatile boolean paused = false;
+
         public ThreadTask(JProgressBar progressBar, JLabel threadTotalLabel, JLabel grandTotalLabel,
                 double sleepInterval) {
             this.progressBar = progressBar;
@@ -175,6 +206,17 @@ public class ThreadTestApplicationWindow extends JFrame {
 
             // thread run method
             for (int i = 1; i <= 100 && !isInterrupted(); i++) {
+                // logic for pause button
+                synchronized (this) {
+                    while (paused) {
+                        try {
+                            wait();
+                        } catch (InterruptedException e) {
+                            return;  
+                        }
+                    }
+                }
+
                 final int progressValue = i; // created final copy of i
 
                 // Update the GUI in the Event Dispatch Thread.
@@ -212,9 +254,20 @@ public class ThreadTestApplicationWindow extends JFrame {
             }
         }
 
+        // inherited method from interface
         @Override
         public void startTask() {
             this.start();
+        }
+
+        @Override
+        public void pauseTask() {
+            paused = true;
+        }
+
+        @Override
+        public void resumeTask() {
+            paused = false;
         }
 
     }
@@ -240,6 +293,18 @@ public class ThreadTestApplicationWindow extends JFrame {
                 tasks[i].startTask();
             }
         }
+
+        public void pauseTasks() {
+            for (ThreadTaskInterface task : tasks) {
+                task.pauseTask();
+            }
+        }
+
+        public void resumeTasks() {
+            for (ThreadTaskInterface task : tasks) {
+                task.resumeTask();
+            }
+        }
     }
 
     // Running an application
@@ -252,5 +317,9 @@ public class ThreadTestApplicationWindow extends JFrame {
     // Thread Task Interface
     interface ThreadTaskInterface {
         void startTask();
+
+        void pauseTask();
+
+        void resumeTask();
     }
 }
