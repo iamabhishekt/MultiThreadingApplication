@@ -150,19 +150,20 @@ public class ThreadTestApplicationWindow extends JFrame {
         public void run() {
             // thread run method
             for (int i = 1; i <= 100 && !isInterrupted(); i++) {
-                final int currentIteration = i; // created final copy of i
+                final int progressValue = i; // created final copy of i
 
                 // Update the GUI in the Event Dispatch Thread.
                 // safe manner for threads
                 SwingUtilities.invokeLater(() -> {
-                    progressBar.setValue(currentIteration);
-
+                    progressBar.setValue(progressValue);
                     threadTotalLabel.setText(String.valueOf(Integer.parseInt(threadTotalLabel.getText()) + 1));
 
+                    // Extract the grand total from the grandTotalLabel's text, increase it, and set it back
                     String[] parts = grandTotalLabel.getText().split(" ");
                     int grandTotal = Integer.parseInt(parts[parts.length - 1]);
                     grandTotalLabel.setText("Grand Total: " + (grandTotal + 1));
                 });
+
                 // Sleep for the interval duration.
                 try {
                     Thread.sleep(sleepInterval);
