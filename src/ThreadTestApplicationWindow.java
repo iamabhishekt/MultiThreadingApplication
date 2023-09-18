@@ -120,4 +120,32 @@ public class ThreadTestApplicationWindow extends JFrame {
             new ThreadTestApplicationWindow().setVisible(true);
         });
     }
+
+    //Thread Class
+    class ThreadTask extends Thread {
+        private JProgressBar progressBar;
+        private JLabel threadTotalLabel;
+        private JLabel grandTotalLabel;
+        private long sleepInterval; // this is in milliseconds
+    
+        public ThreadTask(JProgressBar progressBar, JLabel threadTotalLabel, JLabel grandTotalLabel, long sleepInterval) {
+            this.progressBar = progressBar;
+            this.threadTotalLabel = threadTotalLabel;
+            this.grandTotalLabel = grandTotalLabel;
+            this.sleepInterval = sleepInterval;
+        }
+    
+        @Override
+        public void run() {
+            // Counting and GUI updates
+        }
+        
+        public synchronized void pauseTask() {
+            // Pausing logic
+        }
+    
+        public synchronized void resumeTask() {
+            // Resuming logic
+        }
+    }
 }
