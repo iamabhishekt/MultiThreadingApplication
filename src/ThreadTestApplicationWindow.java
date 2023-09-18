@@ -131,8 +131,8 @@ public class ThreadTestApplicationWindow extends JFrame {
         threadDisplayPanel.add(grandTotalPanel, grandTotalPanelConstraints);
     }
 
-    // Thread Class
-    class ThreadTask extends Thread {
+    // Thread Class with Interface
+    class ThreadTask extends Thread implements ThreadTaskInterface {
         private JProgressBar progressBar;
         private JLabel threadTotalLabel;
         private JLabel grandTotalLabel;
@@ -191,6 +191,11 @@ public class ThreadTestApplicationWindow extends JFrame {
             }
         }
 
+        @Override
+        public void startTask() {
+            this.start();
+        }
+
     }
 
     // Running an application
@@ -198,5 +203,10 @@ public class ThreadTestApplicationWindow extends JFrame {
         SwingUtilities.invokeLater(() -> {
             new ThreadTestApplicationWindow().setVisible(true);
         });
+    }
+
+    // Thread Task Interface
+    interface ThreadTaskInterface {
+        void startTask();
     }
 }
