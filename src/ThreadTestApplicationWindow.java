@@ -52,7 +52,7 @@ public class ThreadTestApplicationWindow extends JFrame {
         // start button
         startButton.addActionListener(e -> {
             for (int i = 0; i < 4; i++) {
-                threads[i] = new ThreadTask(progressBars[i], threadTotals[i], grandTotalLabel, 100); // hardcoded sleep interval for now
+                threads[i] = new ThreadTask(progressBars[i], threadTotals[i], grandTotalLabel, 100); // hardcoded
                 threads[i].start();
             }
             startButton.setEnabled(false);
@@ -136,10 +136,13 @@ public class ThreadTestApplicationWindow extends JFrame {
         private JProgressBar progressBar;
         private JLabel threadTotalLabel;
         private JLabel grandTotalLabel;
-        private long sleepInterval; // this is in milliseconds
+        private double sleepInterval; // this is in milliseconds
+
+        // lock variable
+        private static final Object lock = new Object();
 
         public ThreadTask(JProgressBar progressBar, JLabel threadTotalLabel, JLabel grandTotalLabel,
-                long sleepInterval) {
+                double sleepInterval) {
             this.progressBar = progressBar;
             this.threadTotalLabel = threadTotalLabel;
             this.grandTotalLabel = grandTotalLabel;
@@ -148,31 +151,46 @@ public class ThreadTestApplicationWindow extends JFrame {
 
         @Override
         public void run() {
+
             // thread run method
             for (int i = 1; i <= 100 && !isInterrupted(); i++) {
                 final int progressValue = i; // created final copy of i
 
                 // Update the GUI in the Event Dispatch Thread.
-                // safe manner for threads
+                // thread-safe manner
                 SwingUtilities.invokeLater(() -> {
                     progressBar.setValue(progressValue);
-                    threadTotalLabel.setText(String.valueOf(Integer.parseInt(threadTotalLabel.getText()) + 1));
 
-                    // Extract the grand total from the grandTotalLabel's text, increase it, and set it back
-                    String[] parts = grandTotalLabel.getText().split(" ");
-                    int grandTotal = Integer.parseInt(parts[parts.length - 1]);
-                    grandTotalLabel.setText("Grand Total: " + (grandTotal + 1));
+                    // Extract the grand total from the grandTotalLabel's text, increase it, and set
+                    // it back
+
+                    // Critical Section
+                    synchronized (lock) {
+                        String[] parts = grandTotalLabel.getText().split(" ");
+                        int grandTotal = Integer.parseInt(parts[parts.length - 1]);
+                        int threadTotal = Integer.parseInt(threadTotalLabel.getText());
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException e) {
+                            return;
+                        }
+                        grandTotalLabel.setText("Grand Total: " + (grandTotal + 1));
+                        threadTotalLabel.setText(Integer.toString(threadTotal + 1));
+                    }
                 });
 
                 // Sleep for the interval duration.
                 try {
-                    Thread.sleep(sleepInterval);
+                    long millis = (long) sleepInterval;
+                    int nanos = (int) ((sleepInterval - millis) * 1_000_000); // Convert fractional part to nanoseconds
+                    Thread.sleep(millis, nanos);
                 } catch (InterruptedException e) {
                     // Handle the interrupt
                     return;
                 }
             }
         }
+
     }
 
     // Running an application
