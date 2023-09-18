@@ -115,12 +115,6 @@ public class ThreadTestApplicationWindow extends JFrame {
         threadDisplayPanel.add(grandTotalPanel, grandTotalPanelConstraints);
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new ThreadTestApplicationWindow().setVisible(true);
-        });
-    }
-
     //Thread Class
     class ThreadTask extends Thread {
         private JProgressBar progressBar;
@@ -137,15 +131,14 @@ public class ThreadTestApplicationWindow extends JFrame {
     
         @Override
         public void run() {
-            // Counting and GUI updates
+            // Thread run method
         }
-        
-        public synchronized void pauseTask() {
-            // Pausing logic
-        }
-    
-        public synchronized void resumeTask() {
-            // Resuming logic
-        }
+    }
+
+    //Running an application
+        public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new ThreadTestApplicationWindow().setVisible(true);
+        });
     }
 }
