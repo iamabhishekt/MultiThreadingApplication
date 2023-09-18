@@ -211,11 +211,12 @@ public class ThreadTestApplicationWindow extends JFrame {
         @Override
         public void run() {
             for (int i = 1; i <= PROGRESS_MAX && !isInterrupted(); i++) {
-                synchronized (this) {
+                synchronized (pauseLock) {
                     while (paused) {
                         try {
-                            wait();
+                            pauseLock.wait();
                         } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
                             return;
                         }
                         break;
@@ -234,7 +235,6 @@ public class ThreadTestApplicationWindow extends JFrame {
                         try {
                             Thread.sleep(THREAD_SLEEP_DURATION);
                         } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
                             return;
                         }
 
