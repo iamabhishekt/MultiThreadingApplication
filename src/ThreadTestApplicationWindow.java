@@ -266,6 +266,7 @@ public class ThreadTestApplicationWindow extends JFrame {
         @Override
         public void resumeTask() {
             paused = false;
+            notify(); //to wake up thread again
         }
 
     }
