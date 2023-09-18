@@ -142,10 +142,6 @@ public class ThreadTestApplicationWindow extends JFrame {
     }
 
     private void handleStartAction(ActionEvent e) {
-        if (!areAllThreadsFinished()) {
-            JOptionPane.showMessageDialog(this, "Please wait for all threads to finish before restarting.");
-            return;
-        }
         initializeThreads();
         startAllThreads();
         startButton.setEnabled(true);
