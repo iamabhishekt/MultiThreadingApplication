@@ -1,4 +1,6 @@
 import java.awt.*;
+import java.awt.event.ActionEvent;
+
 import javax.swing.*;
 
 public class ThreadTestApplicationWindow extends JFrame {
@@ -22,15 +24,6 @@ public class ThreadTestApplicationWindow extends JFrame {
         layoutComponents();
     }
 
-    // Thread Task Interface
-    interface ThreadTaskControl {
-        void startTask();
-
-        void pauseTask();
-
-        void resumeTask();
-    }
-
     private void setupFrame() {
         setTitle("Thread Test Application");
         setSize(545, 190);
@@ -42,6 +35,36 @@ public class ThreadTestApplicationWindow extends JFrame {
         getContentPane().setLayout(new BorderLayout(0, 0));
     }
 
+    // Methods for Button Actions
+    private void handleStartAction(ActionEvent e) {
+        initializeThreads();
+        startAllThreads();
+        startButton.setEnabled(true);
+        pauseButton.setEnabled(true);
+        resumeButton.setEnabled(false);
+    }
+
+    private void handlePauseAction(ActionEvent e) {
+        pauseAllThreads();
+        pauseButton.setEnabled(false);
+        resumeButton.setEnabled(true);
+    }
+
+    private void handleResumeAction(ActionEvent e) {
+        resumeAllThreads();
+        pauseButton.setEnabled(true);
+        resumeButton.setEnabled(false);
+    }
+
+    // Thread Task Interface
+    interface ThreadTaskControl {
+        void startTask();
+
+        void pauseTask();
+
+        void resumeTask();
+    }
+
     private void initializeComponents() {
         titleLabel = new JLabel("Thread Test Application");
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -49,43 +72,27 @@ public class ThreadTestApplicationWindow extends JFrame {
         threadTotalLabels = new JLabel[4];
         threadProgressBars = new JProgressBar[4];
 
-        
-        
-        startButton = new JButton("Start");
-        // Action Listeners for buttons
         // start button
-        startButton.addActionListener(e -> {
-            initializeThreads();
-            startAllThreads();
-            startButton.setEnabled(true);
-            pauseButton.setEnabled(true);
-            resumeButton.setEnabled(false);
-        });
-        
-        pauseButton = new JButton("Pause");
-        // Action Listeners for buttons
+        startButton = new JButton("Start");
+        // Action Listeners call from functions for buttons
+        startButton.addActionListener(this::handleStartAction);
+
         // pasuse button
-        pauseButton.addActionListener(e -> {
-            pauseAllThreads();
-            pauseButton.setEnabled(false);
-            resumeButton.setEnabled(true);
-        });
-        
-        resumeButton = new JButton("Resume");
-        // Action Listeners for buttons
+        pauseButton = new JButton("Pause");
+        // Action Listeners call from functions for buttons
+        pauseButton.addActionListener(this::handlePauseAction);
+
         // resume button
-        resumeButton.addActionListener(e -> {
-            resumeAllThreads();
-            pauseButton.setEnabled(true);
-            resumeButton.setEnabled(false);
-        });
+        resumeButton = new JButton("Resume");
+        // Action Listeners call from functions for buttons
+        resumeButton.addActionListener(this::handleResumeAction);
 
         grandTotalLabel = new JLabel("Grand Total: 0");
     }
 
     // Initialize Thread Method for action listener
     private void initializeThreads() {
-        double[] threadSleepIntervals = { 400, 300, 500, 200 }; //taking longer threadSleepIntervals
+        double[] threadSleepIntervals = { 400, 300, 500, 200 }; // taking longer threadSleepIntervals
         for (int i = 0; i < 4; i++) {
             ThreadTaskControl task = threadManager.getTasks()[i];
             if (task instanceof ThreadTask) {
@@ -188,21 +195,22 @@ public class ThreadTestApplicationWindow extends JFrame {
 
     // Thread Class with Interface
     public class ThreadTask extends Thread implements ThreadTaskControl {
-    
+
         private JProgressBar progressBar;
         private JLabel threadTotalLabel;
         private JLabel grandTotalLabel;
         private double sleepInterval;
         private volatile boolean paused = false;
         private static final Object GRAND_TOTAL_LOCK = new Object();
-    
-        public ThreadTask(JProgressBar progressBar, JLabel threadTotalLabel, JLabel grandTotalLabel, double sleepInterval) {
+
+        public ThreadTask(JProgressBar progressBar, JLabel threadTotalLabel, JLabel grandTotalLabel,
+                double sleepInterval) {
             this.progressBar = progressBar;
             this.threadTotalLabel = threadTotalLabel;
             this.grandTotalLabel = grandTotalLabel;
             this.sleepInterval = sleepInterval;
         }
-    
+
         @Override
         public void run() {
             for (int i = 1; i <= 100 && !isInterrupted(); i++) {
@@ -211,31 +219,31 @@ public class ThreadTestApplicationWindow extends JFrame {
                         try {
                             wait();
                         } catch (InterruptedException e) {
-                            return;  
+                            return;
                         }
                     }
                 }
-    
+
                 final int progressValue = i;
                 SwingUtilities.invokeLater(() -> {
                     progressBar.setValue(progressValue);
-    
+
                     synchronized (GRAND_TOTAL_LOCK) {
                         String[] parts = grandTotalLabel.getText().split(" ");
                         int grandTotal = Integer.parseInt(parts[parts.length - 1]);
-    
+
                         int threadTotal = Integer.parseInt(threadTotalLabel.getText());
                         try {
                             Thread.sleep(50);
                         } catch (InterruptedException e) {
                             return;
                         }
-    
+
                         grandTotalLabel.setText("Grand Total: " + (grandTotal + 1));
                         threadTotalLabel.setText(Integer.toString(threadTotal + 1));
                     }
                 });
-    
+
                 try {
                     long millis = (long) sleepInterval;
                     int nanos = (int) ((sleepInterval - millis) * 1_000_000); // Convert fractional part to nanoseconds
@@ -245,17 +253,17 @@ public class ThreadTestApplicationWindow extends JFrame {
                 }
             }
         }
-        
+
         @Override
         public void startTask() {
             this.start();
         }
-    
+
         @Override
         public synchronized void pauseTask() {
             paused = true;
         }
-    
+
         @Override
         public synchronized void resumeTask() {
             paused = false;
@@ -265,38 +273,39 @@ public class ThreadTestApplicationWindow extends JFrame {
 
     // Thread Operation Manager Class
     public class ThreadOperationManager {
-    
+
         private ThreadTaskControl[] tasks = new ThreadTaskControl[4];
-    
-        public void initializeTasks(JProgressBar[] threadProgressBars, JLabel[] threadTotalLabels, JLabel grandTotalLabel, double[] threadSleepIntervals) {
+
+        public void initializeTasks(JProgressBar[] threadProgressBars, JLabel[] threadTotalLabels,
+                JLabel grandTotalLabel, double[] threadSleepIntervals) {
             for (int i = 0; i < 4; i++) {
-                tasks[i] = new ThreadTask(threadProgressBars[i], threadTotalLabels[i], grandTotalLabel, threadSleepIntervals[i]);
+                tasks[i] = new ThreadTask(threadProgressBars[i], threadTotalLabels[i], grandTotalLabel,
+                        threadSleepIntervals[i]);
             }
         }
-        
+
         public ThreadTaskControl[] getTasks() {
             return tasks;
         }
-    
+
         public void startAllTasks() {
             for (int i = 0; i < tasks.length; i++) {
                 tasks[i].startTask();
             }
         }
-    
+
         public void pauseAllTasks() {
             for (ThreadTaskControl task : tasks) {
                 task.pauseTask();
             }
         }
-    
+
         public void resumeAllTasks() {
             for (ThreadTaskControl task : tasks) {
                 task.resumeTask();
             }
         }
     }
-
 
     // Running an application
     public static void main(String[] args) {
