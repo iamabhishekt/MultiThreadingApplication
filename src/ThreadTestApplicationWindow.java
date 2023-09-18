@@ -132,15 +132,6 @@ public class ThreadTestApplicationWindow extends JFrame {
         threadDisplayPanel.add(grandTotalPanel, grandTotalPanelConstraints);
     }
 
-    private boolean areAllThreadsFinished() {
-        for (ThreadControl thread : threadManager.getThreads()) {
-            if (((Thread) thread).isAlive()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private void handleStartAction(ActionEvent e) {
         initializeThreads();
         startAllThreads();
