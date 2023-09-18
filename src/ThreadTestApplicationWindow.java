@@ -55,7 +55,7 @@ public class ThreadTestApplicationWindow extends JFrame {
             startAllThreads();
             startButton.setEnabled(true);
             pauseButton.setEnabled(true);
-            resumeButton.setEnabled(true);
+            resumeButton.setEnabled(false);
         });
 
         // Action Listeners for buttons
@@ -63,7 +63,7 @@ public class ThreadTestApplicationWindow extends JFrame {
         pauseButton.addActionListener(e -> {
             initializeThreads();
             pauseAllThreads();
-            pauseButton.setEnabled(true);
+            pauseButton.setEnabled(false);
             resumeButton.setEnabled(true);
         });
 
@@ -73,7 +73,7 @@ public class ThreadTestApplicationWindow extends JFrame {
             initializeThreads();
             resumeAllThreads();
             pauseButton.setEnabled(true);
-            resumeButton.setEnabled(true);
+            resumeButton.setEnabled(false);
         });
     }
 
