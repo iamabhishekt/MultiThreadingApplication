@@ -132,7 +132,20 @@ public class ThreadTestApplicationWindow extends JFrame {
         threadDisplayPanel.add(grandTotalPanel, grandTotalPanelConstraints);
     }
 
+    private boolean areAllThreadsFinished() {
+        for (ThreadControl thread : threadManager.getThreads()) {
+            if (((Thread) thread).isAlive()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void handleStartAction(ActionEvent e) {
+        if (!areAllThreadsFinished()) {
+            JOptionPane.showMessageDialog(this, "Please wait for all threads to finish before restarting.");
+            return;
+        }
         initializeThreads();
         startAllThreads();
         startButton.setEnabled(true);
@@ -153,7 +166,7 @@ public class ThreadTestApplicationWindow extends JFrame {
     }
 
     private void initializeThreads() {
-        double[] threadSleepIntervals = { 400, 300, 500, 200 };
+        int[] threadSleepIntervals = { 400, 300, 500, 200 };
         for (int i = 0; i < NUM_THREADS; i++) {
             ThreadControl thread = threadManager.getThreads()[i];
             if (thread instanceof ControlledThread) {
@@ -195,13 +208,13 @@ public class ThreadTestApplicationWindow extends JFrame {
         private JProgressBar progressBar;
         private JLabel threadTotalLabel;
         private JLabel grandTotalLabel;
-        private double sleepInterval;
+        private int sleepInterval;
         private volatile boolean paused = false;
         private static final Object GRAND_TOTAL_LOCK = new Object();
         private final Object pauseLock = new Object();
 
         public ControlledThread(JProgressBar progressBar, JLabel threadTotalLabel, JLabel grandTotalLabel,
-                double sleepInterval) {
+                int sleepInterval) {
             this.progressBar = progressBar;
             this.threadTotalLabel = threadTotalLabel;
             this.grandTotalLabel = grandTotalLabel;
@@ -232,21 +245,20 @@ public class ThreadTestApplicationWindow extends JFrame {
                         int grandTotal = Integer.parseInt(parts[parts.length - 1]);
 
                         int threadTotal = Integer.parseInt(threadTotalLabel.getText());
-                        try {
-                            Thread.sleep(THREAD_SLEEP_DURATION);
-                        } catch (InterruptedException e) {
-                            return;
-                        }
 
                         grandTotalLabel.setText("Grand Total: " + (grandTotal + 1));
                         threadTotalLabel.setText(Integer.toString(threadTotal + 1));
+
+                        try {
+                            Thread.sleep(THREAD_SLEEP_DURATION);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
                     }
                 });
 
                 try {
-                    long millis = (long) sleepInterval;
-                    int nanos = (int) ((sleepInterval - millis) * 1_000_000); // Convert fractional part to nanoseconds
-                    Thread.sleep(millis, nanos);
+                    Thread.sleep(sleepInterval);
                 } catch (InterruptedException e) {
                     return;
                 }
@@ -267,7 +279,7 @@ public class ThreadTestApplicationWindow extends JFrame {
 
         @Override
         public void resumeThread() {
-            synchronized (pauseLock) { 
+            synchronized (pauseLock) {
                 paused = false;
                 pauseLock.notify();
             }
@@ -279,7 +291,7 @@ public class ThreadTestApplicationWindow extends JFrame {
         private ThreadControl[] threads = new ThreadControl[NUM_THREADS];
 
         public void initializeThreads(JProgressBar[] threadProgressBars, JLabel[] threadTotalLabels,
-                JLabel grandTotalLabel, double[] threadSleepIntervals) {
+                JLabel grandTotalLabel, int[] threadSleepIntervals) {
             for (int i = 0; i < NUM_THREADS; i++) {
                 threads[i] = new ControlledThread(threadProgressBars[i], threadTotalLabels[i], grandTotalLabel,
                         threadSleepIntervals[i]);
