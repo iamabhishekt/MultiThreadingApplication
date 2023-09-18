@@ -55,6 +55,7 @@ public class ThreadTestApplicationWindow extends JFrame {
         // start button
         startButton.addActionListener(e -> {
             initializeThreads();
+            startAllThreads();
             startButton.setEnabled(false);
             pauseButton.setEnabled(true);
             resumeButton.setEnabled(false);
@@ -77,6 +78,11 @@ public class ThreadTestApplicationWindow extends JFrame {
         }
         grandTotalLabel.setText("Grand Total: 0");
         threadManager.initializeTasks(progressBars, threadTotals, grandTotalLabel, intervals);
+    }
+
+    //start all threads method
+    private void startAllThreads() {
+        threadManager.startTasks();
     }
 
     private void layoutComponents() {
