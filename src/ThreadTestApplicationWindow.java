@@ -13,6 +13,9 @@ public class ThreadTestApplicationWindow extends JFrame {
     private JLabel grandTotalLabel;
     private JLabel titleLabel;
 
+    // store threads
+    private ThreadTask[] threads = new ThreadTask[4];
+
     public ThreadTestApplicationWindow() {
         setupFrame();
         initializeComponents();
@@ -25,7 +28,8 @@ public class ThreadTestApplicationWindow extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         int marginSize = 10;
-        ((JComponent) getContentPane()).setBorder(BorderFactory.createEmptyBorder(marginSize, marginSize, marginSize, marginSize));
+        ((JComponent) getContentPane())
+                .setBorder(BorderFactory.createEmptyBorder(marginSize, marginSize, marginSize, marginSize));
         getContentPane().setLayout(new BorderLayout(0, 0));
     }
 
@@ -43,6 +47,18 @@ public class ThreadTestApplicationWindow extends JFrame {
         resumeButton.setEnabled(false);
 
         grandTotalLabel = new JLabel("Grand Total: 0");
+
+        // Action Listeners for buttons
+        // start button
+        startButton.addActionListener(e -> {
+            for (int i = 0; i < 4; i++) {
+                threads[i] = new ThreadTask(progressBars[i], threadTotals[i], grandTotalLabel, 100); // hardcoded sleep interval for now
+                threads[i].start();
+            }
+            startButton.setEnabled(false);
+            pauseButton.setEnabled(true);
+            resumeButton.setEnabled(false);
+        });
     }
 
     private void layoutComponents() {
@@ -115,28 +131,51 @@ public class ThreadTestApplicationWindow extends JFrame {
         threadDisplayPanel.add(grandTotalPanel, grandTotalPanelConstraints);
     }
 
-    //Thread Class
+    // Thread Class
     class ThreadTask extends Thread {
         private JProgressBar progressBar;
         private JLabel threadTotalLabel;
         private JLabel grandTotalLabel;
         private long sleepInterval; // this is in milliseconds
-    
-        public ThreadTask(JProgressBar progressBar, JLabel threadTotalLabel, JLabel grandTotalLabel, long sleepInterval) {
+
+        public ThreadTask(JProgressBar progressBar, JLabel threadTotalLabel, JLabel grandTotalLabel,
+                long sleepInterval) {
             this.progressBar = progressBar;
             this.threadTotalLabel = threadTotalLabel;
             this.grandTotalLabel = grandTotalLabel;
             this.sleepInterval = sleepInterval;
         }
-    
+
         @Override
         public void run() {
-            // Thread run method
+            // thread run method
+            for (int i = 1; i <= 100 && !isInterrupted(); i++) {
+                final int currentIteration = i; // created final copy of i
+
+                // Update the GUI in the Event Dispatch Thread.
+                // safe manner for threads
+                SwingUtilities.invokeLater(() -> {
+                    progressBar.setValue(currentIteration);
+
+                    threadTotalLabel.setText(String.valueOf(Integer.parseInt(threadTotalLabel.getText()) + 1));
+
+                    String[] parts = grandTotalLabel.getText().split(" ");
+                    int grandTotal = Integer.parseInt(parts[parts.length - 1]);
+                    grandTotalLabel.setText("Grand Total: " + (grandTotal + 1));
+                });
+                // Sleep for the interval duration.
+                try {
+                    Thread.sleep(sleepInterval);
+                } catch (InterruptedException e) {
+                    // Handle the interrupt
+                    return;
+                }
+            }
         }
     }
 
-    //Running an application
-        public static void main(String[] args) {
+    // Running an application
+    public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             new ThreadTestApplicationWindow().setVisible(true);
         });
