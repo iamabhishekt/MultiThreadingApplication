@@ -6,6 +6,15 @@ import javax.swing.*;
 public class ThreadTestApplicationWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
+
+    //Variables for Magic Numbers
+    private static final int NUM_THREADS = 4;
+    private static final int FRAME_WIDTH = 545;
+    private static final int FRAME_HEIGHT = 190;
+    private static final int PROGRESS_MAX = 100;
+    private static final int THREAD_SLEEP_DURATION = 50;
+    private static final String APP_TITLE = "Thread Test Application";
+
     private JLabel[] threadTotalLabels;
     private JProgressBar[] threadProgressBars;
     private JButton startButton;
@@ -23,8 +32,8 @@ public class ThreadTestApplicationWindow extends JFrame {
     }
 
     private void setupFrame() {
-        setTitle("Thread Test Application");
-        setSize(545, 190);
+        setTitle(APP_TITLE);
+        setSize(FRAME_WIDTH, FRAME_HEIGHT);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         int marginSize = 10;
@@ -37,8 +46,8 @@ public class ThreadTestApplicationWindow extends JFrame {
         titleLabel = new JLabel("Thread Test Application");
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        threadTotalLabels = new JLabel[4];
-        threadProgressBars = new JProgressBar[4];
+        threadTotalLabels = new JLabel[NUM_THREADS];
+        threadProgressBars = new JProgressBar[NUM_THREADS];
 
         startButton = new JButton("Start");
         startButton.addActionListener(this::handleStartAction);
@@ -62,7 +71,7 @@ public class ThreadTestApplicationWindow extends JFrame {
     }
 
     private void setupThreadDisplayComponents(JPanel threadDisplayPanel) {
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < NUM_THREADS; i++) {
             JLabel threadLabel = new JLabel((i + 1) + ": ");
             threadLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 
@@ -142,7 +151,7 @@ public class ThreadTestApplicationWindow extends JFrame {
 
     private void initializeThreads() {
         double[] threadSleepIntervals = { 400, 300, 500, 200 };
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < NUM_THREADS; i++) {
             ThreadTaskControl task = threadManager.getTasks()[i];
             if (task instanceof ThreadTask) {
                 ThreadTask threadTask = (ThreadTask) task;
@@ -198,7 +207,7 @@ public class ThreadTestApplicationWindow extends JFrame {
 
         @Override
         public void run() {
-            for (int i = 1; i <= 100 && !isInterrupted(); i++) {
+            for (int i = 1; i <= PROGRESS_MAX && !isInterrupted(); i++) {
                 synchronized (this) {
                     while (paused) {
                         try {
@@ -219,7 +228,7 @@ public class ThreadTestApplicationWindow extends JFrame {
 
                         int threadTotal = Integer.parseInt(threadTotalLabel.getText());
                         try {
-                            Thread.sleep(50);
+                            Thread.sleep(THREAD_SLEEP_DURATION);
                         } catch (InterruptedException e) {
                             return;
                         }
@@ -263,7 +272,7 @@ public class ThreadTestApplicationWindow extends JFrame {
         // Initializes the thread tasks.
         public void initializeTasks(JProgressBar[] threadProgressBars, JLabel[] threadTotalLabels,
                 JLabel grandTotalLabel, double[] threadSleepIntervals) {
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < NUM_THREADS; i++) {
                 tasks[i] = new ThreadTask(threadProgressBars[i], threadTotalLabels[i], grandTotalLabel,
                         threadSleepIntervals[i]);
             }
