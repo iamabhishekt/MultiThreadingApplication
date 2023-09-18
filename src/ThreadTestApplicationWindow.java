@@ -6,8 +6,6 @@ import javax.swing.*;
 public class ThreadTestApplicationWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
-
-    //Variables for Magic Numbers
     private static final int NUM_THREADS = 4;
     private static final int FRAME_WIDTH = 545;
     private static final int FRAME_HEIGHT = 190;
@@ -178,7 +176,6 @@ public class ThreadTestApplicationWindow extends JFrame {
         threadManager.resumeAllTasks();
     }
 
-    // Interface for controlling thread tasks
     interface ThreadTaskControl {
 
         void startTask();
@@ -267,9 +264,8 @@ public class ThreadTestApplicationWindow extends JFrame {
 
     public class ThreadOperationManager {
 
-        private ThreadTaskControl[] tasks = new ThreadTaskControl[4];
+        private ThreadTaskControl[] tasks = new ThreadTaskControl[NUM_THREADS];
 
-        // Initializes the thread tasks.
         public void initializeTasks(JProgressBar[] threadProgressBars, JLabel[] threadTotalLabels,
                 JLabel grandTotalLabel, double[] threadSleepIntervals) {
             for (int i = 0; i < NUM_THREADS; i++) {
